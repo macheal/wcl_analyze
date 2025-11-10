@@ -43,9 +43,8 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
       try {
         const fetchedAbilities = await getAbilities(reportId, boss.id);
         setAbilities(fetchedAbilities);
-        if (fetchedAbilities.length > 0) {
-          setSelectedAbility(fetchedAbilities[0]);
-        }
+        // 不再自动选择第一个技能，让用户手动选择
+        setSelectedAbility(null);
       } catch (error) {
         console.error("Failed to fetch abilities", error);
       } finally {
@@ -108,6 +107,7 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
             aria-label="选择技能"
             disabled={abilities.length === 0}
           >
+            <option value="">请选择技能</option>
             {abilities.length > 0 ? (
               abilities.map((ability) => (
                 <option key={ability.id} value={ability.id}>
@@ -115,7 +115,7 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
                 </option>
               ))
             ) : (
-              <option>该首领未找到技能</option>
+              <option disabled>该首领未找到技能</option>
             )}
           </select>
         )}
