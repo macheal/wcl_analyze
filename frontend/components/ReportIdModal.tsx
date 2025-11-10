@@ -1,3 +1,11 @@
+/*
+ * @Author: GUANGYU WANG xinyukc01@hotmail.com
+ * @Date: 2025-11-10 06:17:34
+ * @LastEditors: GUANGYU WANG xinyukc01@hotmail.com
+ * @LastEditTime: 2025-11-10 15:55:59
+ * @FilePath: /wcl_analyze/frontend/components/ReportIdModal.tsx
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 import React, { useState } from 'react';
 import { Spinner } from './Spinner';
 
@@ -41,9 +49,14 @@ export const ReportIdModal: React.FC<ReportIdModalProps> = ({ onSubmit, isLoadin
             {isLoading ? <Spinner /> : '分析报告'}
           </button>
         </form>
+        <div>
+          <p className="text-gray-400 text-sm mt-4">
+            将WCL战斗日志上传到WCL后，拿到对应的报告ID，可以进行分析
+          </p>
+        </div>
         <div className="mt-6 pt-6 border-t border-gray-700">
           <img 
-            src="https://storage.googleapis.com/prompt-gallery/prod/images/2ea2436f-e14b-4b2a-89a3-5c3a3754e427/0.webp" 
+            src="/images/demo.png" 
             alt="在URL中查找WCL报告ID的示例" 
             className="rounded-lg border border-gray-600 shadow-lg w-full" 
           />
