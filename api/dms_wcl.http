@@ -1,5 +1,6 @@
 
-@host=192.168.50.51:9081
+# @host=192.168.50.51:9081
+@host=120.48.142.225:38080
 # @report_id=aGpgCrxHBhRnkLmY
 @report_id=GY4zAW739HNCjtrk
 @boss_id=3134
