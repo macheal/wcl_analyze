@@ -1,8 +1,9 @@
 
-@host=192.168.50.51
+@host=192.168.50.51:9081
 # @report_id=aGpgCrxHBhRnkLmY
 @report_id=GY4zAW739HNCjtrk
 @boss_id=3134
+@skill_id=1224840
 
 ### 获取boss列表
 POST /api/v2/code/get_wcl_boss_by_report_id
@@ -12,21 +13,21 @@ Content-Type: application/json
 {"report_id":"{{report_id}}"}
 
 ### 命中技能查询-技能列表
-POST /api/v2/code/get_wcl_damage_taken_abilities
+POST /api/v2/code/get_wcl_damage_taken_abilities_by_boss_id 
 HOST: {{host}}
 Content-Type: application/json
 
-{"report_id":"{{report_id}}","id":21,"start_time":8484119,"end_time":8525658}
+{"report_id":"{{report_id}}","boss_id":{{boss_id}}}
 
 ### 命中技能查询
 POST /api/v2/code/boss_skill_hit_list
 HOST: {{host}}
 Content-Type: application/json
 
-{"report_id":"{{report_id}}","boss_id":{{boss_id}},"skill_id":"155166"}
+{"report_id":"{{report_id}}","boss_id":{{boss_id}},"skill_id":"{{skill_id}}"}
 
 
-### 卡雷什M7万相拳分人统计
+### 卡雷什M7，万相拳汇总统计
 POST /api/v2/code/boss_kls_M7_wxq
 HOST: {{host}}
 Content-Type: application/json
@@ -34,7 +35,7 @@ Content-Type: application/json
 {"report_id":"{{report_id}}"}
 
 
-### 卡雷什M7万相拳分场次统计
+### 卡雷什M7，万相拳分场次统计
 POST /api/v2/code/boss_kls_M7_wxq_list
 HOST: {{host}}
 Content-Type: application/json

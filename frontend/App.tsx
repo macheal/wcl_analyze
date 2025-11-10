@@ -58,7 +58,7 @@ export default function App() {
   const availableTabs = useMemo((): TabInfo[] => {
     const tabs: TabInfo[] = [{ id: 'skillHit', label: '技能命中查询' }];
     if (selectedBoss?.id === 3134) {
-      tabs.push({ id: 'kalecgos', label: '卡雷苟斯 M7 万相拳' });
+      tabs.push({ id: 'kalecgos', label: '卡雷什M7万相拳' });
     }
     return tabs;
   }, [selectedBoss]);

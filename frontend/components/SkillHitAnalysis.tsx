@@ -61,12 +61,9 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
   }, [reportId, boss.id, selectedAbility]);
 
   const columns = useMemo(() => [
-    { key: 'timestamp', label: '时间戳' },
-    { key: 'playerName', label: '玩家名称' },
-    { key: 'amount', label: '承受伤害' },
-    { key: 'mitigated', label: '减免' },
-    { key: 'unmitigated', label: '原始伤害' },
-    { key: 'hitType', label: '命中类型' },
+    { key: 'timestamp', label: '会话' },
+    { key: 'playerName', label: '命中玩家' },
+    { key: 'hitType', label: '状态' },
   ], []);
 
   const handleAbilityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {

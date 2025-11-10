@@ -33,6 +33,27 @@ export interface KalecgosFightStat {
   totalDamage: number;
 }
 
+// 实际接口返回的万相拳玩家统计格式
+export interface KalecgosPlayerStatActual {
+  "游戏名": string;
+  "失误次数": number;
+  "失误轮次分布": string;
+}
+
+// 实际接口返回的万相拳分场次统计格式
+export interface KalecgosFightStatActual {
+  "id": number;
+  "boss血量": string;
+  "时间": number;
+  "用时(秒)": number;
+  "data": string;
+}
+
+// 扩展的分场次统计类型，包含明细数据
+export interface ExtendedKalecgosFightStat extends KalecgosFightStat {
+  detail?: string;
+}
+
 export type TabId = 'skillHit' | 'kalecgos';
 
 export interface TabInfo {

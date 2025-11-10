@@ -1,3 +1,11 @@
+/*
+ * @Author: GUANGYU WANG xinyukc01@hotmail.com
+ * @Date: 2025-11-10 06:17:34
+ * @LastEditors: GUANGYU WANG xinyukc01@hotmail.com
+ * @LastEditTime: 2025-11-10 14:44:47
+ * @FilePath: /wcl_analyze/frontend/components/BossSelector.tsx
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 import React from 'react';
 import { Boss } from '../types';
 
@@ -40,7 +48,7 @@ export const BossSelector: React.FC<BossSelectorProps> = ({ bosses, selectedBoss
       >
         {bosses.map((boss) => (
           <option key={boss.id} value={boss.id}>
-            {boss.name} {boss.kill ? '✔️' : '❌'}
+            {boss.name} 
           </option>
         ))}
       </select>
