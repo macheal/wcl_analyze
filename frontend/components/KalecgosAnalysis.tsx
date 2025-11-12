@@ -2,18 +2,21 @@
  * @Author: GUANGYU WANG xinyukc01@hotmail.com
  * @Date: 2025-11-10 06:17:34
  * @LastEditors: GUANGYU WANG xinyukc01@hotmail.com
- * @LastEditTime: 2025-11-10 15:52:40
+ * @LastEditTime: 2025-11-12 16:43:01
  * @FilePath: /wcl_analyze/frontend/components/KalecgosAnalysis.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
 import React, { useState, useEffect, useMemo } from 'react';
-import { Boss, KalecgosPlayerStat, KalecgosFightStat, ExtendedKalecgosFightStat } from '../types';
-import { getKalecgosPlayerStats, getKalecgosFightStats } from '../services/wclService';
-import { DataTable } from './DataTable';
+import { Boss, KalecgosPlayerStat } from '../types';
+import { getKalecgosPlayerStats, getKalecgosPhaseStats } from '../services/wclService';
+import { DataTable, SortDirection } from './DataTable';
 
-// 扩展玩家统计类型，包含失误轮次分布
+// 扩展玩家统计类型，包含失误轮次分布和阶段统计
 interface ExtendedKalecgosPlayerStat extends KalecgosPlayerStat {
   mistakeDistribution?: string;
+  stack_1?: number;
+  stack_2?: number;
+  stack_3?: number;
 }
 
 interface KalecgosAnalysisProps {
@@ -23,20 +26,25 @@ interface KalecgosAnalysisProps {
 
 export const KalecgosAnalysis: React.FC<KalecgosAnalysisProps> = ({ reportId, boss }) => {
   const [playerStats, setPlayerStats] = useState<ExtendedKalecgosPlayerStat[]>([]);
-  const [fightStats, setFightStats] = useState<ExtendedKalecgosFightStat[]>([]);
+  const [phaseStats, setPhaseStats] = useState<ExtendedKalecgosPlayerStat[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
+  // 排序状态
+  const [playerSortColumn, setPlayerSortColumn] = useState<string>('hits');
+  const [playerSortDirection, setPlayerSortDirection] = useState<SortDirection>('desc');
+  const [phaseSortColumn, setPhaseSortColumn] = useState<string>('hits');
+  const [phaseSortDirection, setPhaseSortDirection] = useState<SortDirection>('desc');
 
   const fetchData = async () => {
     setIsLoading(true);
     setError('');
     try {
-      const [playerData, fightData] = await Promise.all([
-        getKalecgosPlayerStats(reportId, boss.id),
-        getKalecgosFightStats(reportId, boss.id),
-      ]);
+      const playerData = await getKalecgosPlayerStats(reportId, boss.id);
       setPlayerStats(playerData);
-      setFightStats(fightData);
+      
+      // 获取分阶段统计数据
+      const phaseData = await getKalecgosPhaseStats(reportId);
+      setPhaseStats(phaseData);
     } catch (error) {
       console.error("Failed to fetch Kalecgos stats", error);
       setError('获取万相拳统计数据失败，请稍后重试');
@@ -45,23 +53,84 @@ export const KalecgosAnalysis: React.FC<KalecgosAnalysisProps> = ({ reportId, bo
     }
   };
 
+  // 排序处理函数
+  const handlePlayerSort = (columnKey: string, direction: SortDirection) => {
+    setPlayerSortColumn(columnKey);
+    setPlayerSortDirection(direction);
+  };
+  
+  // 阶段统计排序处理函数
+  const handlePhaseSort = (columnKey: string, direction: SortDirection) => {
+    setPhaseSortColumn(columnKey);
+    setPhaseSortDirection(direction);
+  };
+  
   useEffect(() => {
     fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportId, boss.id]);
+  
+  // 排序数据
+  const sortedPlayerStats = useMemo(() => {
+    if (!playerSortColumn || !playerSortDirection || playerStats.length === 0) {
+      return playerStats;
+    }
+    
+    return [...playerStats].sort((a, b) => {
+      const aValue = a[playerSortColumn as keyof ExtendedKalecgosPlayerStat];
+      const bValue = b[playerSortColumn as keyof ExtendedKalecgosPlayerStat];
+      
+      // 数字类型比较
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return playerSortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // 字符串类型比较
+      const aStr = String(aValue);
+      const bStr = String(bValue);
+      return playerSortDirection === 'asc' ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
+    });
+  }, [playerStats, playerSortColumn, playerSortDirection]);
+  
+  // 排序阶段数据
+  const sortedPhaseStats = useMemo(() => {
+    if (!phaseSortColumn || !phaseSortDirection || phaseStats.length === 0) {
+      return phaseStats;
+    }
+    
+    return [...phaseStats].sort((a, b) => {
+      const aValue = a[phaseSortColumn as keyof ExtendedKalecgosPlayerStat];
+      const bValue = b[phaseSortColumn as keyof ExtendedKalecgosPlayerStat];
+      
+      // 数字类型比较
+      if (typeof aValue === 'number' && typeof bValue === 'number') {
+        return phaseSortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+      }
+      
+      // 字符串类型比较
+      const aStr = String(aValue);
+      const bStr = String(bValue);
+      return phaseSortDirection === 'asc' ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
+    });
+  }, [phaseStats, phaseSortColumn, phaseSortDirection]);
+  
+
 
   const playerColumns = useMemo(() => [
-    { key: 'playerName', label: '玩家名称' },
+    { key: 'playerName', label: '玩家' },
     { key: 'hits', label: '失误次数' },
-    { key: 'mistakeDistribution', label: '失误轮次分布' },
+  ], []);
+  
+  // 阶段统计表格列配置
+  const phaseColumns = useMemo(() => [
+    { key: 'playerName', label: '玩家' },
+    { key: 'hits', label: '总失误' },
+    { key: 'stack_1', label: '阶段1' },
+    { key: 'stack_2', label: '阶段2' },
+    { key: 'stack_3', label: '阶段3' },
   ], []);
 
-  const fightColumns = useMemo(() => [
-    { key: 'fightId', label: '战斗ID' },
-    { key: 'timestamp', label: 'Boss血量阶段' },
-    { key: 'hits', label: '战斗用时(秒)' },
-    { key: 'detail', label: '明细' },
-  ], []);
+
 
   return (
     <div className="space-y-8">
@@ -100,12 +169,25 @@ export const KalecgosAnalysis: React.FC<KalecgosAnalysisProps> = ({ reportId, bo
       <div className="space-y-6">
         <div>
           <h3 className="text-xl font-bold text-white mb-4">万相拳失误统计</h3>
-          <DataTable columns={playerColumns} data={playerStats} isLoading={isLoading} keyField="playerName" />
+          <DataTable 
+            columns={playerColumns} 
+            data={sortedPlayerStats} 
+            isLoading={isLoading} 
+            keyField="playerName" 
+            onSort={handlePlayerSort}
+            
+          />
         </div>
         
         <div>
           <h3 className="text-xl font-bold text-white mb-4">万相拳分阶段统计</h3>
-          <DataTable columns={fightColumns} data={fightStats} isLoading={isLoading} keyField="fightId" />
+          <DataTable 
+            columns={phaseColumns} 
+            data={sortedPhaseStats} 
+            isLoading={isLoading} 
+            keyField="playerName" 
+            onSort={handlePhaseSort}
+          />
         </div>
       </div>
     </div>

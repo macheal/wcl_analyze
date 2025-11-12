@@ -1,4 +1,4 @@
-import { Boss, Ability, SkillHit, KalecgosPlayerStat, KalecgosFightStat, KalecgosPlayerStatActual, KalecgosFightStatActual, ExtendedKalecgosFightStat } from '../types';
+import { Boss, Ability, SkillHit, KalecgosPlayerStat } from '../types';
 const MOCK_DELAY = 800;
 
 // Mock Data
@@ -52,12 +52,16 @@ const MOCK_KALECGOS_PLAYER_STATS: KalecgosPlayerStat[] = [
   { playerName: '猎人五号', hits: 5, totalDamage: 1300000, avgDamage: 260000 },
 ];
 
-const MOCK_KALECGOS_FIGHT_STATS: KalecgosFightStat[] = [
-  { fightId: 1, timestamp: '00:30.123', hits: 8, totalDamage: 2100000 },
-  { fightId: 2, timestamp: '01:15.456', hits: 7, totalDamage: 1850000 },
-  { fightId: 3, timestamp: '02:05.789', hits: 9, totalDamage: 2400000 },
-  { fightId: 4, timestamp: '02:50.101', hits: 6, totalDamage: 1600000 },
+// 模拟万相拳分阶段统计数据
+const MOCK_KALECGOS_PHASE_STATS = [
+  { playerName: '盗贼一号', hits: 5, stack_1: 0, stack_2: 2, stack_3: 3 },
+  { playerName: '法师二号', hits: 4, stack_1: 1, stack_2: 1, stack_3: 2 },
+  { playerName: '战士三号', hits: 6, stack_1: 2, stack_2: 2, stack_3: 2 },
+  { playerName: '牧师四号', hits: 3, stack_1: 0, stack_2: 2, stack_3: 1 },
+  { playerName: '猎人五号', hits: 5, stack_1: 1, stack_2: 2, stack_3: 2 },
 ];
+
+
 
 // API Functions
 export const getBosses = async (reportId: string): Promise<Boss[]> => {
@@ -124,6 +128,50 @@ export const getBosses = async (reportId: string): Promise<Boss[]> => {
     });
   }
 };
+
+// 获取万相拳分阶段详细数据（直接返回原始数据，不做处理）
+export const getKalecgosPhaseStats = async (reportId: string): Promise<any[]> => {
+  console.log(`Fetching Kalecgos phase stats for report: ${reportId}`);
+  
+  try {
+    const url = '/api/v2/code/boss_kls_M7_wxq_list';
+    const requestBody = JSON.stringify({ 
+      report_id: reportId
+    });
+    
+    console.log(`API Request: POST ${url}`);
+    console.log(`Request Body: ${requestBody}`);
+    
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: requestBody,
+    });
+
+    console.log(`API Response Status: ${response.status}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(`API Response Data:`, data);
+    return data;
+    
+  } catch (error) {
+    console.error('Failed to fetch Kalecgos phase stats:', error);
+    console.log('Falling back to mock data');
+    // 如果API调用失败，回退到mock数据
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve(MOCK_KALECGOS_PHASE_STATS);
+      }, MOCK_DELAY);
+    });
+  }
+};
+
 
 // 辅助函数：解析技能命中数据
 const parseSkillHitData = (data: any): SkillHit[] => {
@@ -192,16 +240,58 @@ const parseAbilityData = (data: any): Ability[] => {
 // 辅助函数：解析万相拳玩家统计数据
 const parseKalecgosPlayerStats = (data: any): KalecgosPlayerStat[] => {
   // 根据实际API返回的数据格式进行转换
-  // 实际返回格式: [{"游戏名": "玩家1", "失误次数": 5, "失误轮次分布": "第2轮3次,第3轮2次"}]
+  
+  // 处理新的返回值结构 - 如果返回对象包含特定字段
+    if (data && typeof data === 'object' && !Array.isArray(data)) {
+      // 假设新结构可能将数据嵌套在某个字段中
+      if (data.players && Array.isArray(data.players)) {
+        const stats = data.players.map((stat: any) => ({
+          playerName: stat["游戏名"] || stat.playerName || stat.name || '未知玩家',
+          hits: stat["失误次数"] || stat.mistakes || stat.hits || stat.count || 0,
+          totalDamage: 0, // 实际接口没有返回总伤害，设为0
+          avgDamage: 0,   // 实际接口没有返回平均伤害，设为0
+          mistakeDistribution: stat["失误轮次分布"] || stat.distribution || stat.mistakeDistribution || '',
+          // 添加阶段相关字段
+          stack_1: stat["stack_1"] || stat["stack1"] || 0,
+          stack_2: stat["stack_2"] || stat["stack2"] || 0,
+          stack_3: stat["stack_3"] || stat["stack3"] || 0,
+        }));
+      console.log(`Parsed Kalecgos player stats from new structure:`, stats);
+      return stats;
+    }
+    // 另一种可能的新结构 - 直接包含统计数据字段
+      if (data.stats && Array.isArray(data.stats)) {
+        const stats = data.stats.map((stat: any) => ({
+          playerName: stat["游戏名"] || stat.playerName || stat.name || '未知玩家',
+          hits: stat["失误次数"] || stat.mistakes || stat.hits || stat.count || 0,
+          totalDamage: 0,
+          avgDamage: 0,
+          mistakeDistribution: stat["失误轮次分布"] || stat.distribution || stat.mistakeDistribution || '',
+          // 添加阶段相关字段
+          stack_1: stat["stack_1"] || stat["stack1"] || 0,
+          stack_2: stat["stack_2"] || stat["stack2"] || 0,
+          stack_3: stat["stack_3"] || stat["stack3"] || 0,
+        }));
+      console.log(`Parsed Kalecgos player stats from stats array:`, stats);
+      return stats;
+    }
+  }
+  
+  // 兼容新的数据结构格式: [{"count": 1, "name": "馒头墩儿"}]
+  // 以及旧的返回值结构: [{"游戏名": "玩家1", "失误次数": 5, "失误轮次分布": "第2轮3次,第3轮2次"}]
   if (Array.isArray(data)) {
-    const stats = data.map((stat: KalecgosPlayerStatActual) => ({
-      playerName: stat["游戏名"] || '未知玩家',
-      hits: stat["失误次数"] || 0,
+    const stats = data.map((stat: any) => ({
+      playerName: stat["游戏名"] || stat.playerName || stat.name || '未知玩家',
+      hits: stat["失误次数"] || stat.mistakes || stat.hits || stat.count || 0,
       totalDamage: 0, // 实际接口没有返回总伤害，设为0
       avgDamage: 0,   // 实际接口没有返回平均伤害，设为0
-      mistakeDistribution: stat["失误轮次分布"] || '', // 保留失误轮次分布信息
+      mistakeDistribution: stat["失误轮次分布"] || stat.distribution || stat.mistakeDistribution || '',
+      // 添加阶段相关字段
+      stack_1: stat["stack_1"] || stat["stack1"] || 0,
+      stack_2: stat["stack_2"] || stat["stack2"] || 0,
+      stack_3: stat["stack_3"] || stat["stack3"] || 0,
     }));
-    console.log(`Parsed Kalecgos player stats:`, stats);
+    console.log(`Parsed Kalecgos player stats from array:`, stats);
     return stats;
   }
   
@@ -210,26 +300,7 @@ const parseKalecgosPlayerStats = (data: any): KalecgosPlayerStat[] => {
   return [];
 };
 
-// 辅助函数：解析万相拳分场次统计数据
-const parseKalecgosFightStats = (data: any): ExtendedKalecgosFightStat[] => {
-  // 根据实际API返回的数据格式进行转换
-  // 实际返回格式: [{"id": 21, "boss血量": "95%(P1)", "时间": 8525658, "用时(秒)": 41, "data": ""}]
-  if (Array.isArray(data)) {
-    const stats = data.map((stat: KalecgosFightStatActual) => ({
-      fightId: stat["id"] || 0,
-      timestamp: stat["boss血量"] || '未知阶段',
-      hits: stat["用时(秒)"] || 0,  // 用时作为命中次数的替代
-      totalDamage: 0,  // 实际接口没有返回总伤害，设为0
-      detail: stat["data"] || '', // 添加明细数据
-    }));
-    console.log(`Parsed Kalecgos fight stats:`, stats);
-    return stats;
-  }
-  
-  // 如果没有数据，返回空数组
-  console.log(`No Kalecgos fight stats found in response`);
-  return [];
-};
+
 
 // 辅助函数：解析boss数据
 const parseBossData = (data: any): Boss[] => {
@@ -388,54 +459,6 @@ export const getKalecgosPlayerStats = async (reportId: string, bossId: number): 
       setTimeout(() => {
         if (bossId === 3134) {
           resolve(MOCK_KALECGOS_PLAYER_STATS);
-        } else {
-          resolve([]);
-        }
-      }, MOCK_DELAY);
-    });
-  }
-};
-
-export const getKalecgosFightStats = async (reportId: string, bossId: number): Promise<ExtendedKalecgosFightStat[]> => {
-  console.log(`Fetching Kalecgos fight stats for report: ${reportId}, boss: ${bossId}`);
-  
-  try {
-    const url = '/api/v2/code/boss_kls_M7_wxq_list';
-    const requestBody = JSON.stringify({ 
-      report_id: reportId
-    });
-    
-    console.log(`API Request: POST ${url}`);
-    console.log(`Request Body: ${requestBody}`);
-    
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: requestBody,
-    });
-
-    console.log(`API Response Status: ${response.status}`);
-    
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log(`API Response Data:`, data);
-    
-    // 解析万相拳分场次统计数据
-    return parseKalecgosFightStats(data);
-    
-  } catch (error) {
-    console.error('Failed to fetch Kalecgos fight stats:', error);
-    console.log('Falling back to mock data');
-    // 如果API调用失败，回退到mock数据
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        if (bossId === 3134) {
-          resolve(MOCK_KALECGOS_FIGHT_STATS);
         } else {
           resolve([]);
         }

@@ -9,6 +9,18 @@ import { getBosses } from './services/wclService';
 import { Boss, TabId, TabInfo } from './types';
 import { WowIcon, GithubIcon } from './components/icons/Icons';
 
+// URL参数处理的辅助函数
+const getReportIdFromUrl = (): string | null => {
+  const urlParams = new URLSearchParams(window.location.hash.substring(1));
+  return urlParams.get('reportId');
+};
+
+const clearReportIdFromUrl = (): void => {
+  const urlParams = new URLSearchParams(window.location.hash.substring(1));
+  urlParams.delete('reportId');
+  window.location.hash = urlParams.toString();
+};
+
 export default function App() {
   const [reportId, setReportId] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(true);
@@ -41,9 +53,36 @@ export default function App() {
     }
   }, []);
   
+  // 从URL查询参数中获取reportId并自动应用
   useEffect(() => {
-    // Automatically open modal on load
-    setShowModal(true);
+    const urlReportId = getReportIdFromUrl();
+    
+    if (urlReportId && !reportId) {
+      handleReportIdSubmit(urlReportId);
+    }
+  }, [reportId, handleReportIdSubmit]);
+
+  // 监听URL变化，支持在页面已加载后更新查询参数
+  useEffect(() => {
+    const handleHashChange = () => {
+      const urlReportId = getReportIdFromUrl();
+      
+      if (urlReportId && urlReportId !== reportId) {
+        handleReportIdSubmit(urlReportId);
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [reportId, handleReportIdSubmit]);
+
+  useEffect(() => {
+    // 只有当URL中没有reportId参数时才自动打开modal
+    const urlReportId = getReportIdFromUrl();
+    
+    if (!urlReportId) {
+      setShowModal(true);
+    }
   }, []);
 
   const resetApp = () => {
@@ -53,6 +92,8 @@ export default function App() {
     setSelectedBoss(null);
     setActiveTab('skillHit');
     setError(null);
+    // 重置URL中的reportId参数
+    clearReportIdFromUrl();
   };
 
   const availableTabs = useMemo((): TabInfo[] => {

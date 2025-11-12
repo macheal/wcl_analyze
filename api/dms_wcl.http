@@ -1,8 +1,8 @@
 
-@host=192.168.50.51:9081
+@host=192.168.50.51:18081
 # @host=120.48.142.225:38080
 # @report_id=aGpgCrxHBhRnkLmY
-@report_id=GY4zAW739HNCjtrk
+@report_id=tTAM3BKp9Yjd7RHr
 @boss_id=3134
 @skill_id=1224840
 
@@ -42,4 +42,14 @@ HOST: {{host}}
 Content-Type: application/json
 
 {"report_id":"{{report_id}}"}
+
+
+
+### 卡雷什M7，万相拳分场次统计
+POST /api/v2/code/boss_kls_M7_wxq_detail
+HOST: {{host}}
+Content-Type: application/json
+
+{"report_id":"{{report_id}}"}
+
 
