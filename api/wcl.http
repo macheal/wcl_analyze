@@ -1,0 +1,15 @@
+###
+GET https://www.warcraftlogs.com/v1/reports/user/xinyukc01&api_key=91addeec2b7d1229f6821fe4235368f7
+Content-Type: application/json
+
+
+###
+GET https://www.warcraftlogs.com/v1/zones
+Authorization: Bearer 91addeec2b7d1229f6821fe4235368f7
+Content-Type: application/json
+
+
+###
+GET https://classic.warcraftlogs.com/v1/reports/guild/%s/%s/US?api_key=%s
+
+https://www.warcraftlogs.com/profile
