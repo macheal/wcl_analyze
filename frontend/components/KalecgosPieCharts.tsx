@@ -137,7 +137,12 @@ export const KalecgosPieCharts: React.FC<KalecgosPieChartsProps> = ({ playerStat
         },
         label: {
           show: true,
-          formatter: '{b}: {c} ({d}%)'
+          formatter: '{b}: {c} ({d}%)',
+          textStyle: {
+            color: '#ffffff',
+            textBorderColor: 'transparent',
+            textBorderWidth: 0
+          }
         },
         animationType: 'scale',
         animationEasing: 'elasticOut',

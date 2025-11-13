@@ -73,8 +73,9 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
       title: {
         text: '万相拳各阶段失误人数统计',
         left: 'center',
+        top: 10,
         textStyle: {
-          fontSize: 16,
+          fontSize: 14,
           fontWeight: 'bold',
           color: '#fff'
         }
@@ -115,16 +116,18 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
       },
       legend: {
         data: ['第一次失误', '第二次失误', '第三次失误', 'boss血量'],
-        top: 30,
+        top: 40,
+        left: 'center',
         textStyle: {
-          color: '#fff'
+          color: '#fff',
+          fontSize: 12
         }
       },
       grid: {
         left: '3%',
         right: '4%',
         bottom: '3%',
-        top: '15%',
+        top: '25%',
         containLabel: true
       },
       xAxis: {
@@ -238,8 +241,9 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
       title: {
         text: '万相拳各阶段失误趋势图',
         left: 'center',
+        top: 10,
         textStyle: {
-          fontSize: 16,
+          fontSize: 14,
           fontWeight: 'bold',
           color: '#fff'
         }
@@ -271,16 +275,18 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
       },
       legend: {
         data: ['第一次失误', '第二次失误', '第三次失误'],
-        top: 30,
+        top: 40,
+        left: 'center',
         textStyle: {
-          color: '#fff'
+          color: '#fff',
+          fontSize: 12
         }
       },
       grid: {
         left: '3%',
         right: '4%',
         bottom: '3%',
-        top: '15%',
+        top: '25%',
         containLabel: true
       },
       xAxis: {
