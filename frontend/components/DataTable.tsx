@@ -105,11 +105,17 @@ export function DataTable<T extends Record<string, any>>({
           ) : (
             data.map((row, index) => (
               <tr key={row[keyField] !== undefined && row[keyField] !== null ? String(row[keyField]) : index} className="border-b border-gray-700 hover:bg-gray-600/50 transition-colors">
-                {columns.map((col) => (
-                  <td key={col.key} className="px-4 py-3 whitespace-nowrap">
-                    {formatNumber(row[col.key])}
-                  </td>
-                ))}
+                {columns.map((col) => {
+                  const value = row[col.key];
+                  // 检查是否为包含换行符的字符串
+                  const isMultilineString = typeof value === 'string' && value.includes('\n');
+                  
+                  return (
+                    <td key={col.key} className={`px-4 py-3 ${isMultilineString ? 'whitespace-pre-line' : 'whitespace-nowrap'}`}>
+                      {isMultilineString ? value : formatNumber(value)}
+                    </td>
+                  );
+                })}
               </tr>
             ))
           )}

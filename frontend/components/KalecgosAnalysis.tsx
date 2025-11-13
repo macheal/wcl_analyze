@@ -19,6 +19,16 @@ interface ExtendedKalecgosPlayerStat extends KalecgosPlayerStat {
   stack_3?: number;
 }
 
+// 万相拳分阶段详细统计类型
+interface KalecgosPhaseDetailStat {
+  id: number;
+  boss_percentage: string;
+  cost: number;
+  stack_1: string;
+  stack_2: string;
+  stack_3: string;
+}
+
 interface KalecgosAnalysisProps {
   reportId: string;
   boss: Boss;
@@ -26,14 +36,14 @@ interface KalecgosAnalysisProps {
 
 export const KalecgosAnalysis: React.FC<KalecgosAnalysisProps> = ({ reportId, boss }) => {
   const [playerStats, setPlayerStats] = useState<ExtendedKalecgosPlayerStat[]>([]);
-  const [phaseStats, setPhaseStats] = useState<ExtendedKalecgosPlayerStat[]>([]);
+  const [phaseStats, setPhaseStats] = useState<KalecgosPhaseDetailStat[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string>('');
   // 排序状态
   const [playerSortColumn, setPlayerSortColumn] = useState<string>('hits');
   const [playerSortDirection, setPlayerSortDirection] = useState<SortDirection>('desc');
-  const [phaseSortColumn, setPhaseSortColumn] = useState<string>('hits');
-  const [phaseSortDirection, setPhaseSortDirection] = useState<SortDirection>('desc');
+  const [phaseSortColumn, setPhaseSortColumn] = useState<string>('id');
+  const [phaseSortDirection, setPhaseSortDirection] = useState<SortDirection>('asc');
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -99,8 +109,8 @@ export const KalecgosAnalysis: React.FC<KalecgosAnalysisProps> = ({ reportId, bo
     }
     
     return [...phaseStats].sort((a, b) => {
-      const aValue = a[phaseSortColumn as keyof ExtendedKalecgosPlayerStat];
-      const bValue = b[phaseSortColumn as keyof ExtendedKalecgosPlayerStat];
+      const aValue = a[phaseSortColumn as keyof KalecgosPhaseDetailStat];
+      const bValue = b[phaseSortColumn as keyof KalecgosPhaseDetailStat];
       
       // 数字类型比较
       if (typeof aValue === 'number' && typeof bValue === 'number') {
@@ -126,11 +136,12 @@ export const KalecgosAnalysis: React.FC<KalecgosAnalysisProps> = ({ reportId, bo
   
   // 阶段统计表格列配置
   const phaseColumns = useMemo(() => [
-    { key: 'playerName', label: '玩家' },
-    { key: 'hits', label: '总失误' },
-    { key: 'stack_1', label: '阶段1' },
-    { key: 'stack_2', label: '阶段2' },
-    { key: 'stack_3', label: '阶段3' },
+    { key: 'id', label: '场次ID' },
+    { key: 'boss_percentage', label: 'boss血量' },
+    { key: 'cost', label: '用时（秒）' },
+    { key: 'stack_1', label: '第一次' },
+    { key: 'stack_2', label: '第二次' },
+    { key: 'stack_3', label: '第三次' },
   ], []);
 
 

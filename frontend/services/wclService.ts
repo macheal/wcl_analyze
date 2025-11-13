@@ -129,12 +129,12 @@ export const getBosses = async (reportId: string): Promise<Boss[]> => {
   }
 };
 
-// 获取万相拳分阶段详细数据（直接返回原始数据，不做处理）
+// 获取万相拳分阶段详细数据（调用新接口）
 export const getKalecgosPhaseStats = async (reportId: string): Promise<any[]> => {
   console.log(`Fetching Kalecgos phase stats for report: ${reportId}`);
   
   try {
-    const url = '/api/v2/code/boss_kls_M7_wxq_list';
+    const url = '/api/v2/code/boss_kls_M7_wxq_detail';
     const requestBody = JSON.stringify({ 
       report_id: reportId
     });
