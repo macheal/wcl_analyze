@@ -1,3 +1,11 @@
+/*
+ * @Author: GUANGYU WANG xinyukc01@hotmail.com
+ * @Date: 2025-11-13 12:33:08
+ * @LastEditors: GUANGYU WANG xinyukc01@hotmail.com
+ * @LastEditTime: 2025-11-13 14:21:11
+ * @FilePath: /wcl_analyze/frontend/components/icons/Icons.tsx
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 
 import React from 'react';
 
@@ -15,7 +23,7 @@ export const WowIcon: React.FC<{className?: string}> = ({ className }) => (
 
 export const GithubIcon: React.FC<{className?: string}> = ({ className }) => (
   <img 
-    src="/components/icons/logo.jpg" 
+    src="/images/logo.jpg" 
     alt="WCL Logo" 
     className={className}
   />
