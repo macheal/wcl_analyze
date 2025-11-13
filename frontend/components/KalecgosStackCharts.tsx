@@ -4,7 +4,8 @@ import type { EChartsOption } from 'echarts';
 
 interface PhaseDetailStat {
   id: number;
-  boss_percentage: string;
+  boss_percentage: string | number;
+  boos_lastPhaseForPercentageDisplay: string;
   cost: number;
   stack_1: string[];
   stack_2: string[];
@@ -62,6 +63,11 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
     const stack1Data = filteredPhaseStats.map(stat => Array.isArray(stat.stack_1) ? stat.stack_1.length : 0);
     const stack2Data = filteredPhaseStats.map(stat => Array.isArray(stat.stack_2) ? stat.stack_2.length : 0);
     const stack3Data = filteredPhaseStats.map(stat => Array.isArray(stat.stack_3) ? stat.stack_3.length : 0);
+    // 获取boss血量百分比数据
+    const bossPercentageData = filteredPhaseStats.map(stat => {
+      const value = typeof stat.boss_percentage === 'number' ? stat.boss_percentage : parseFloat(stat.boss_percentage);
+      return isNaN(value) ? 0 : value;
+    });
 
     return {
       title: {
@@ -79,7 +85,7 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
       tooltip: {
         trigger: 'axis',
         axisPointer: {
-          type: 'shadow'
+          type: 'cross'
         },
         formatter: function(params: any) {
           if (!params || !params.length || !filteredPhaseStats[params[0].dataIndex]) {
@@ -87,14 +93,20 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
           }
           
           const stat = filteredPhaseStats[params[0].dataIndex];
-          let result = `<div style="font-weight: bold; margin-bottom: 5px;">场次 ${stat.id} - ${stat.boss_percentage}</div>`;
-          result += `<div>Boss血量: ${stat.boss_percentage}</div>`;
+          const percentage = typeof stat.boss_percentage === 'number' ? (stat.boss_percentage * 100).toFixed(1) : stat.boss_percentage;
+          let result = `<div style="font-weight: bold; margin-bottom: 5px;">场次 ${stat.id} - ${stat.boos_lastPhaseForPercentageDisplay}</div>`;
+          result += `<div>阶段: ${stat.boos_lastPhaseForPercentageDisplay}</div>`;
+          result += `<div>Boss血量: ${percentage}%</div>`;
           result += `<div>用时: ${stat.cost}秒</div>`;
           result += `<div style="margin-top: 8px;">`;
           params.forEach((param: any) => {
             result += `<div style="display: flex; align-items: center; margin: 2px 0;">`;
             result += `<span style="display: inline-block; width: 10px; height: 10px; background-color: ${param.color}; margin-right: 5px;"></span>`;
-            result += `<span>${param.seriesName}: ${param.value}人</span>`;
+            if (param.seriesName === 'boss血量') {
+              result += `<span>${param.seriesName}: ${(param.value * 100).toFixed(1)}%</span>`;
+            } else {
+              result += `<span>${param.seriesName}: ${param.value}人</span>`;
+            }
             result += `</div>`;
           });
           result += `</div>`;
@@ -102,7 +114,7 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
         }
       },
       legend: {
-        data: ['第一次失误', '第二次失误', '第三次失误'],
+        data: ['第一次失误', '第二次失误', '第三次失误', 'boss血量'],
         top: 30,
         textStyle: {
           color: '#fff'
@@ -128,22 +140,46 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
           }
         }
       },
-      yAxis: {
-        type: 'value',
-        name: '失误人数',
-        nameTextStyle: {
-          fontSize: 12,
-          color: '#fff'
-        },
-        axisLabel: {
-          color: '#fff'
-        },
-        axisLine: {
-          lineStyle: {
+      yAxis: [
+        {
+          type: 'value',
+          name: '失误人数',
+          position: 'left',
+          nameTextStyle: {
+            fontSize: 12,
             color: '#fff'
+          },
+          axisLabel: {
+            color: '#fff'
+          },
+          axisLine: {
+            lineStyle: {
+              color: '#fff'
+            }
           }
+        },
+        {
+          type: 'value',
+          name: 'boss血量(%)',
+          position: 'right',
+          nameTextStyle: {
+            fontSize: 12,
+            color: '#fff'
+          },
+          axisLabel: {
+            color: '#fff',
+            formatter: function(value: number) {
+              return (value * 100).toFixed(0) + '%';
+            }
+          },
+          axisLine: {
+            lineStyle: {
+              color: '#fff'
+            }
+          },
+          max: 1
         }
-      },
+      ],
       series: [
         {
           name: '第一次失误',
@@ -170,6 +206,21 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
           data: stack3Data,
           itemStyle: {
             color: '#fac858'
+          }
+        },
+        {
+          name: 'boss血量',
+          type: 'line',
+          yAxisIndex: 1,
+          data: bossPercentageData,
+          smooth: true,
+          symbol: 'circle',
+          symbolSize: 8,
+          itemStyle: {
+            color: '#ee6666'
+          },
+          lineStyle: {
+            width: 3
           }
         }
       ]

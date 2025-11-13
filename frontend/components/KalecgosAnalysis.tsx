@@ -24,7 +24,8 @@ export interface ExtendedKalecgosPlayerStat extends KalecgosPlayerStat {
 // 万相拳分阶段详细统计类型
 interface KalecgosPhaseDetailStat {
   id: number;
-  boss_percentage: string;
+  boss_percentage: string | number;
+  boos_lastPhaseForPercentageDisplay: string;
   cost: number;
   stack_1: string[];
   stack_2: string[];
@@ -170,7 +171,18 @@ export const KalecgosAnalysis: React.FC<KalecgosAnalysisProps> = ({ reportId, bo
         return value;
       }
     },
-    { key: 'boss_percentage', label: 'boss血量' },
+    { key: 'boos_lastPhaseForPercentageDisplay', label: '阶段' },
+    { 
+      key: 'boss_percentage', 
+      label: 'boss血量',
+      render: (value: any) => {
+        // 将数字转换为百分比格式显示
+        if (typeof value === 'number') {
+          return `${(value * 100).toFixed(1)}%`;
+        }
+        return value;
+      }
+    },
     { key: 'cost', label: '用时（秒）' },
     { key: 'stack_1', label: '第一次' },
     { key: 'stack_2', label: '第二次' },
