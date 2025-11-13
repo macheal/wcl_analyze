@@ -1,3 +1,11 @@
+<!--
+ * @Author: GUANGYU WANG xinyukc01@hotmail.com
+ * @Date: 2025-11-10 11:15:59
+ * @LastEditors: GUANGYU WANG xinyukc01@hotmail.com
+ * @LastEditTime: 2025-11-13 11:21:14
+ * @FilePath: /wcl_analyze/docs/prd/wcl_analyze_requirements.md
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+-->
 # WCL战斗日志分析系统 - 前端查询页面需求文档
 
 ## 项目背景
@@ -95,10 +103,3 @@ WCL (Warcraft Logs) 是一个魔兽世界战斗日志分析平台，本项目旨
 3. 部署脚本和配置文件
 4. 测试用例和测试报告
 
-
-
-在万相拳失误统计上方，增加2个echarts饼形图
-
-1：维度是玩家，数值是失误次数，点击下钻，是该玩家的第一次、第二次、第三次的失误次数
-
-2： 维度是失误的第一次，第二次，第三次，数值是每次的总和，点击下钻是该次失误玩家为维度，数值是该玩家该次数的失误次数
