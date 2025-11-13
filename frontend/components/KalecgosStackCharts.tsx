@@ -69,8 +69,12 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
         left: 'center',
         textStyle: {
           fontSize: 16,
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          color: '#fff'
         }
+      },
+      textStyle: {
+        color: '#fff'
       },
       tooltip: {
         trigger: 'axis',
@@ -99,7 +103,10 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
       },
       legend: {
         data: ['第一次失误', '第二次失误', '第三次失误'],
-        top: 30
+        top: 30,
+        textStyle: {
+          color: '#fff'
+        }
       },
       grid: {
         left: '3%',
@@ -112,14 +119,29 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
         type: 'category',
         data: xAxisData,
         axisLabel: {
-          rotate: 45
+          rotate: 45,
+          color: '#fff'
+        },
+        axisLine: {
+          lineStyle: {
+            color: '#fff'
+          }
         }
       },
       yAxis: {
         type: 'value',
         name: '失误人数',
         nameTextStyle: {
-          fontSize: 12
+          fontSize: 12,
+          color: '#fff'
+        },
+        axisLabel: {
+          color: '#fff'
+        },
+        axisLine: {
+          lineStyle: {
+            color: '#fff'
+          }
         }
       },
       series: [
@@ -167,8 +189,12 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
         left: 'center',
         textStyle: {
           fontSize: 16,
-          fontWeight: 'bold'
+          fontWeight: 'bold',
+          color: '#fff'
         }
+      },
+      textStyle: {
+        color: '#fff'
       },
       tooltip: {
         trigger: 'axis',
@@ -194,7 +220,10 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
       },
       legend: {
         data: ['第一次失误', '第二次失误', '第三次失误'],
-        top: 30
+        top: 30,
+        textStyle: {
+          color: '#fff'
+        }
       },
       grid: {
         left: '3%',
@@ -207,14 +236,29 @@ export const KalecgosStackCharts: React.FC<KalecgosStackChartsProps> = ({ phaseS
         type: 'category',
         data: xAxisData,
         axisLabel: {
-          rotate: 45
+          rotate: 45,
+          color: '#fff'
+        },
+        axisLine: {
+          lineStyle: {
+            color: '#fff'
+          }
         }
       },
       yAxis: {
         type: 'value',
         name: '失误人数',
         nameTextStyle: {
-          fontSize: 12
+          fontSize: 12,
+          color: '#fff'
+        },
+        axisLabel: {
+          color: '#fff'
+        },
+        axisLine: {
+          lineStyle: {
+            color: '#fff'
+          }
         }
       },
       series: [
