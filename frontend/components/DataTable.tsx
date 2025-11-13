@@ -110,9 +110,13 @@ export function DataTable<T extends Record<string, any>>({
                   // 检查是否为包含换行符的字符串
                   const isMultilineString = typeof value === 'string' && value.includes('\n');
                   
+                  // 处理数字为0的情况（针对stack_1, stack_2, stack_3列）
+                  const isZeroNumber = typeof value === 'number' && value === 0;
+                  const shouldHideZero = isZeroNumber && (col.key === 'stack_1' || col.key === 'stack_2' || col.key === 'stack_3');
+                  
                   return (
                     <td key={col.key} className={`px-4 py-3 ${isMultilineString ? 'whitespace-pre-line' : 'whitespace-nowrap'}`}>
-                      {isMultilineString ? value : formatNumber(value)}
+                      {shouldHideZero ? '' : (isMultilineString ? value : formatNumber(value))}
                     </td>
                   );
                 })}
