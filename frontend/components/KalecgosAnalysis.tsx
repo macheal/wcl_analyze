@@ -2,7 +2,7 @@
  * @Author: GUANGYU WANG xinyukc01@hotmail.com
  * @Date: 2025-11-10 06:17:34
  * @LastEditors: GUANGYU WANG xinyukc01@hotmail.com
- * @LastEditTime: 2025-11-12 16:43:01
+ * @LastEditTime: 2025-11-13 10:25:36
  * @FilePath: /wcl_analyze/frontend/components/KalecgosAnalysis.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -10,9 +10,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Boss, KalecgosPlayerStat } from '../types';
 import { getKalecgosPlayerStats, getKalecgosPhaseStats } from '../services/wclService';
 import { DataTable, SortDirection } from './DataTable';
+import { KalecgosPieCharts } from './KalecgosPieCharts';
 
 // 扩展玩家统计类型，包含失误轮次分布和阶段统计
-interface ExtendedKalecgosPlayerStat extends KalecgosPlayerStat {
+export interface ExtendedKalecgosPlayerStat extends KalecgosPlayerStat {
   mistakeDistribution?: string;
   stack_1?: number;
   stack_2?: number;
@@ -180,6 +181,9 @@ export const KalecgosAnalysis: React.FC<KalecgosAnalysisProps> = ({ reportId, bo
         </button>
       </div>
       
+      {/* 饼图统计区域 */}
+      <KalecgosPieCharts playerStats={sortedPlayerStats} />
+      
       <div className="space-y-6">
         <div>
           <h3 className="text-xl font-bold text-white mb-4">万相拳失误统计</h3>
@@ -199,7 +203,7 @@ export const KalecgosAnalysis: React.FC<KalecgosAnalysisProps> = ({ reportId, bo
             columns={phaseColumns} 
             data={sortedPhaseStats} 
             isLoading={isLoading} 
-            keyField="playerName" 
+            keyField="id" 
             onSort={handlePhaseSort}
           />
         </div>

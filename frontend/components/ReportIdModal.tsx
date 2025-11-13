@@ -16,7 +16,7 @@ interface ReportIdModalProps {
 }
 
 export const ReportIdModal: React.FC<ReportIdModalProps> = ({ onSubmit, isLoading, error }) => {
-  const [reportId, setReportId] = useState('GY4zAW739HNCjtrk'); // Default example
+  const [reportId, setReportId] = useState('tTAM3BKp9Yjd7RHr'); // Default example
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +28,7 @@ export const ReportIdModal: React.FC<ReportIdModalProps> = ({ onSubmit, isLoadin
       <div className="bg-gray-800 rounded-lg shadow-2xl p-8 w-full max-w-md m-4 transform transition-all duration-300 scale-100 max-h-full overflow-y-auto">
         <h2 className="text-2xl font-bold text-white mb-4">输入 WCL 报告ID</h2>
         <p className="text-gray-400 mb-6">
-          请输入报告ID以开始分析。例如: <code className="bg-gray-700 text-yellow-400 px-1 rounded">GY4zAW739HNCjtrk</code>
+          请输入报告ID以开始分析。例如: <code className="bg-gray-700 text-yellow-400 px-1 rounded">tTAM3BKp9Yjd7RHr</code>
         </p>
         <form onSubmit={handleSubmit}>
           <input
