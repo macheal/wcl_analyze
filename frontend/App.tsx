@@ -120,7 +120,7 @@ export default function App() {
             {reportId && <p className="text-sm text-gray-400">报告ID: <span className="font-mono bg-gray-700 px-2 py-1 rounded">{reportId}</span> <button onClick={resetApp} className="ml-2 text-cyan-400 hover:text-cyan-500 text-xs">(更改)</button></p>}
           </div>
         </div>
-        <a href="https://github.com/your-repo" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">
+        <a href="https://github.com/macheal/wcl_analyze" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" title="云边落叶">
           <GithubIcon className="h-8 w-8"/>
         </a>
       </header>
