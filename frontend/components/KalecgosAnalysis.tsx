@@ -119,6 +119,9 @@ export const KalecgosAnalysis: React.FC<KalecgosAnalysisProps> = ({ reportId, bo
   const playerColumns = useMemo(() => [
     { key: 'playerName', label: '玩家' },
     { key: 'hits', label: '失误次数' },
+    { key: 'stack_1', label: '第一次' },
+    { key: 'stack_2', label: '第二次' },
+    { key: 'stack_3', label: '第三次' },
   ], []);
   
   // 阶段统计表格列配置
