@@ -52,13 +52,13 @@ const MOCK_KALECGOS_PLAYER_STATS: KalecgosPlayerStat[] = [
   { playerName: '猎人五号', hits: 5, totalDamage: 1300000, avgDamage: 260000 },
 ];
 
-// 模拟万相拳分阶段统计数据
+// 模拟万相拳分阶段统计数据 - 匹配实际接口格式
 const MOCK_KALECGOS_PHASE_STATS = [
-  { playerName: '盗贼一号', hits: 5, stack_1: 0, stack_2: 2, stack_3: 3 },
-  { playerName: '法师二号', hits: 4, stack_1: 1, stack_2: 1, stack_3: 2 },
-  { playerName: '战士三号', hits: 6, stack_1: 2, stack_2: 2, stack_3: 2 },
-  { playerName: '牧师四号', hits: 3, stack_1: 0, stack_2: 2, stack_3: 1 },
-  { playerName: '猎人五号', hits: 5, stack_1: 1, stack_2: 2, stack_3: 2 },
+  { id: 1, boss_percentage: 'P1_65%', cost: 150, stack_1: ['盗贼一号', '法师二号'], stack_2: ['战士三号'], stack_3: ['牧师四号', '猎人五号'], url: 'https://www.warcraftlogs.com/reports/abcd1234#fight=1' },
+  { id: 2, boss_percentage: 'P1_68%', cost: 164, stack_1: ['碧山玄宗'], stack_2: [], stack_3: [], url: 'https://www.warcraftlogs.com/reports/abcd1234#fight=2' },
+  { id: 3, boss_percentage: 'P1_69%', cost: 113, stack_1: [], stack_2: ['薛定谔的狗'], stack_3: ['神勇小饭团'], url: 'https://www.warcraftlogs.com/reports/abcd1234#fight=3' },
+  { id: 4, boss_percentage: 'P1_58%', cost: 194, stack_1: [], stack_2: ['捕蛇鹰'], stack_3: [], url: 'https://www.warcraftlogs.com/reports/abcd1234#fight=4' },
+  { id: 5, boss_percentage: 'P2_64%', cost: 136, stack_1: [], stack_2: [], stack_3: ['馒头墩儿', '云边落叶'], url: 'https://www.warcraftlogs.com/reports/abcd1234#fight=5' },
 ];
 
 

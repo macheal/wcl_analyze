@@ -6,6 +6,7 @@ export interface Column {
   key: string;
   label: string;
   sortable?: boolean;
+  render?: (value: any, row: any) => React.ReactNode;
 }
 
 export interface DataTableProps<T> {
@@ -113,6 +114,15 @@ export function DataTable<T extends Record<string, any>>({
                   // 处理数字为0的情况（针对stack_1, stack_2, stack_3列）
                   const isZeroNumber = typeof value === 'number' && value === 0;
                   const shouldHideZero = isZeroNumber && (col.key === 'stack_1' || col.key === 'stack_2' || col.key === 'stack_3');
+                  
+                  // 如果有自定义渲染函数，使用它
+                  if (col.render) {
+                    return (
+                      <td key={col.key} className="px-4 py-3 whitespace-nowrap">
+                        {col.render(value, row)}
+                      </td>
+                    );
+                  }
                   
                   return (
                     <td key={col.key} className={`px-4 py-3 ${isMultilineString ? 'whitespace-pre-line' : 'whitespace-nowrap'}`}>

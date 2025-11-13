@@ -2,7 +2,7 @@
  * @Author: GUANGYU WANG xinyukc01@hotmail.com
  * @Date: 2025-11-10 06:17:34
  * @LastEditors: GUANGYU WANG xinyukc01@hotmail.com
- * @LastEditTime: 2025-11-13 10:25:36
+ * @LastEditTime: 2025-11-13 11:16:01
  * @FilePath: /wcl_analyze/frontend/components/KalecgosAnalysis.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -11,6 +11,7 @@ import { Boss, KalecgosPlayerStat } from '../types';
 import { getKalecgosPlayerStats, getKalecgosPhaseStats } from '../services/wclService';
 import { DataTable, SortDirection } from './DataTable';
 import { KalecgosPieCharts } from './KalecgosPieCharts';
+import { KalecgosStackCharts } from './KalecgosStackCharts';
 
 // 扩展玩家统计类型，包含失误轮次分布和阶段统计
 export interface ExtendedKalecgosPlayerStat extends KalecgosPlayerStat {
@@ -25,9 +26,10 @@ interface KalecgosPhaseDetailStat {
   id: number;
   boss_percentage: string;
   cost: number;
-  stack_1: string;
-  stack_2: string;
-  stack_3: string;
+  stack_1: string[];
+  stack_2: string[];
+  stack_3: string[];
+  url?: string; // 场次详情链接
 }
 
 interface KalecgosAnalysisProps {
@@ -124,6 +126,17 @@ export const KalecgosAnalysis: React.FC<KalecgosAnalysisProps> = ({ reportId, bo
       return phaseSortDirection === 'asc' ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
     });
   }, [phaseStats, phaseSortColumn, phaseSortDirection]);
+
+  // 格式化阶段统计数据，将数组转换为换行符分隔的字符串
+  const formattedPhaseStats = useMemo(() => {
+    return sortedPhaseStats.map(stat => ({
+      ...stat,
+      // 将数组转换为换行符分隔的字符串，用于表格显示
+      stack_1: Array.isArray(stat.stack_1) ? stat.stack_1.join('\n') : '',
+      stack_2: Array.isArray(stat.stack_2) ? stat.stack_2.join('\n') : '',
+      stack_3: Array.isArray(stat.stack_3) ? stat.stack_3.join('\n') : ''
+    }));
+  }, [sortedPhaseStats]);
   
 
 
@@ -137,7 +150,26 @@ export const KalecgosAnalysis: React.FC<KalecgosAnalysisProps> = ({ reportId, bo
   
   // 阶段统计表格列配置
   const phaseColumns = useMemo(() => [
-    { key: 'id', label: '场次ID' },
+    { 
+      key: 'id', 
+      label: '场次ID',
+      render: (value: any, row: KalecgosPhaseDetailStat) => {
+        if (row.url) {
+          return (
+            <a 
+              href={row.url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-400 hover:text-blue-300 underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {value}
+            </a>
+          );
+        }
+        return value;
+      }
+    },
     { key: 'boss_percentage', label: 'boss血量' },
     { key: 'cost', label: '用时（秒）' },
     { key: 'stack_1', label: '第一次' },
@@ -184,6 +216,7 @@ export const KalecgosAnalysis: React.FC<KalecgosAnalysisProps> = ({ reportId, bo
       {/* 饼图统计区域 */}
       <KalecgosPieCharts playerStats={sortedPlayerStats} />
       
+     
       <div className="space-y-6">
         <div>
           <h3 className="text-xl font-bold text-white mb-4">万相拳失误统计</h3>
@@ -196,12 +229,15 @@ export const KalecgosAnalysis: React.FC<KalecgosAnalysisProps> = ({ reportId, bo
             
           />
         </div>
+        {/* 堆叠图表区域 */}
+        <KalecgosStackCharts phaseStats={sortedPhaseStats} isLoading={isLoading} />
+      
         
         <div>
           <h3 className="text-xl font-bold text-white mb-4">万相拳分阶段统计</h3>
           <DataTable 
             columns={phaseColumns} 
-            data={sortedPhaseStats} 
+            data={formattedPhaseStats} 
             isLoading={isLoading} 
             keyField="id" 
             onSort={handlePhaseSort}
