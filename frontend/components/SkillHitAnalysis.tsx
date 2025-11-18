@@ -298,10 +298,96 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
 
   // 堆叠面积图配置
   const stackAreaChartOption = useMemo(() => {
-    if (!selectedAbility || hitSummaryData.length === 0) {
+    if (!selectedAbility || (hitSummaryData.length === 0 && !drillDownState.isDrillDown)) {
       return {}
     }
 
+    // 下钻状态：使用战斗场次作为X轴
+    if (drillDownState.isDrillDown) {
+      const drillDownFightData = drillDownState.drillDownData
+        .filter(item => item.fight > 0) // 只显示有数据的战斗
+        .sort((a, b) => a.fight - b.fight); // 按战斗场次排序
+
+      return {
+        title: {
+          text: `${drillDownState.userName} - 战斗伤害构成分析`,
+          left: 'center',
+          textStyle: {
+            color: '#fff'
+          }
+        },
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'cross',
+            label: {
+              backgroundColor: '#6a7985'
+            }
+          }
+        },
+        legend: {
+          data: ['最终伤害', '减伤', '吸收盾'],
+          textStyle: {
+            color: '#fff'
+          },
+          top: 'bottom'
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '15%',
+          containLabel: true
+        },
+        xAxis: {
+          type: 'category',
+          boundaryGap: false,
+          data: drillDownFightData.map(item => `战斗 ${item.fight}`),
+          axisLabel: {
+            color: '#fff'
+          }
+        },
+        yAxis: {
+          type: 'value',
+          axisLabel: {
+            color: '#fff'
+          }
+        },
+        series: [
+          {
+            name: '最终伤害',
+            type: 'line',
+            stack: '总量',
+            areaStyle: {},
+            emphasis: {
+              focus: 'series'
+            },
+            data: drillDownFightData.map(item => item.amount)
+          },
+          {
+            name: '减伤',
+            type: 'line',
+            stack: '总量',
+            areaStyle: {},
+            emphasis: {
+              focus: 'series'
+            },
+            data: drillDownFightData.map(item => item.mitigated)
+          },
+          {
+            name: '吸收盾',
+            type: 'line',
+            stack: '总量',
+            areaStyle: {},
+            emphasis: {
+              focus: 'series'
+            },
+            data: drillDownFightData.map(item => item.absorbed)
+          }
+        ]
+      };
+    }
+
+    // 主状态：使用玩家名称作为X轴
     return {
       title: {
         text: '伤害构成分析',
@@ -380,7 +466,7 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
         }
       ]
     };
-  }, [selectedAbility, hitSummaryData]);
+  }, [selectedAbility, hitSummaryData, drillDownState]);
 
   const handleAbilityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const abilityId = parseInt(e.target.value, 10);
