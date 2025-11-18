@@ -73,3 +73,14 @@ export interface TabInfo {
   id: TabId;
   label: string;
 }
+
+// 技能命中汇总数据
+export interface SkillHitSummary {
+  id: string;
+  name: string;
+  amount: number;
+  count: number;
+  unmitigatedAmount: number;
+  mitigated: number;
+  absorbed: number;
+}

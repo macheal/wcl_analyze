@@ -1,8 +1,18 @@
+/*
+ * @Author: GUANGYU WANG xinyukc01@hotmail.com
+ * @Date: 2025-11-13 12:33:08
+ * @LastEditors: GUANGYU WANG xinyukc01@hotmail.com
+ * @LastEditTime: 2025-11-18 16:48:50
+ * @FilePath: /wcl_analyze/frontend/components/SkillHitAnalysis.tsx
+ * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
+ */
 import React, { useState, useEffect, useMemo } from 'react';
-import { Boss, Ability, SkillHit } from '../types';
-import { getAbilities, getSkillHits } from '../services/wclService';
-import { DataTable } from './DataTable';
+import { Boss, Ability, SkillHitSummary } from '../types';
+import { getAbilities, getSkillHitSummary } from '../services/wclService';
 import { Spinner } from './Spinner';
+import { DataTable } from './DataTable';
+import ReactECharts from 'echarts-for-react';
+import * as echarts from 'echarts';
 
 interface SkillHitAnalysisProps {
   reportId: string;
@@ -13,33 +23,17 @@ interface SkillHitAnalysisProps {
 export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, boss }) => {
   const [abilities, setAbilities] = useState<Ability[]>([]);
   const [selectedAbility, setSelectedAbility] = useState<Ability | null>(null);
-  const [hitData, setHitData] = useState<SkillHit[]>([]);
+  const [hitSummaryData, setHitSummaryData] = useState<SkillHitSummary[]>([]);
   const [isLoadingAbilities, setIsLoadingAbilities] = useState<boolean>(true);
-  const [isLoadingHitData, setIsLoadingHitData] = useState<boolean>(false);
+  const [isLoadingHitSummary, setIsLoadingHitSummary] = useState<boolean>(false);
 
-  const refreshData = () => {
-    if (!selectedAbility) return;
-    const fetchHitData = async () => {
-      setIsLoadingHitData(true);
-      setHitData([]);
-      try {
-        const fetchedHitData = await getSkillHits(reportId, boss.id, selectedAbility.id);
-        setHitData(fetchedHitData);
-      } catch (error) {
-        console.error("Failed to fetch hit data", error);
-      } finally {
-        setIsLoadingHitData(false);
-      }
-    };
-    fetchHitData();
-  };
+  // 刷新功能已移除
 
   useEffect(() => {
     const fetchAbilities = async () => {
       setIsLoadingAbilities(true);
       setAbilities([]);
       setSelectedAbility(null);
-      setHitData([]);
       try {
         const fetchedAbilities = await getAbilities(reportId, boss.id);
         setAbilities(fetchedAbilities);
@@ -56,31 +50,177 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportId, boss.id]);
 
+  // 获取技能命中汇总数据
   useEffect(() => {
-    if (!selectedAbility) return;
+    if (!selectedAbility) {
+      setHitSummaryData([]);
+      return;
+    }
 
-    const fetchHitData = async () => {
-      setIsLoadingHitData(true);
-      setHitData([]);
+    const fetchHitSummaryData = async () => {
+      setIsLoadingHitSummary(true);
       try {
-        const fetchedHitData = await getSkillHits(reportId, boss.id, selectedAbility.id);
-        setHitData(fetchedHitData);
+        const data = await getSkillHitSummary(reportId, boss.id, selectedAbility.id);
+        setHitSummaryData(data);
       } catch (error) {
-        console.error("Failed to fetch hit data", error);
+        console.error("Failed to fetch hit summary data", error);
+        setHitSummaryData([]);
       } finally {
-        setIsLoadingHitData(false);
+        setIsLoadingHitSummary(false);
       }
     };
 
-    fetchHitData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    fetchHitSummaryData();
   }, [reportId, boss.id, selectedAbility]);
 
+  // 定义表格列
   const columns = useMemo(() => [
-    { key: 'timestamp', label: '会话' },
-    { key: 'playerName', label: '命中玩家' },
-    { key: 'hitType', label: '状态' },
+    { key: 'name', label: '姓名', align: 'left' },
+    { key: 'amount', label: '最终伤害', format: 'number', align: 'right' },
+    { key: 'count', label: '命中次数', format: 'number',align: 'right' },
+    { key: 'unmitigatedAmount', label: '原始伤害', format: 'number', align: 'right' },
+    { key: 'mitigated', label: '减伤', format: 'number', align: 'right' },
+    { key: 'absorbed', label: '吸收盾', format: 'number', align: 'right' },
   ], []);
+
+  // 饼形图配置
+  const pieChartOption = useMemo(() => {
+    if (!selectedAbility || hitSummaryData.length === 0) {
+      return {}
+    }
+
+    return {
+      tooltip: {
+        trigger: 'item',
+        formatter: '{a} <br/>{b}: {c} ({d}%)'
+      },
+      legend: {
+        show: false
+      },
+      series: [
+        {
+          name: '最终伤害',
+          type: 'pie',
+          radius: '50%',
+          center: ['50%', '60%'],
+          data: hitSummaryData.map(item => ({
+            name: item.name,
+            value: item.amount,
+            itemStyle: {
+              color: `hsl(${Math.random() * 360}, 70%, 60%)`
+            }
+          })),
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+          },
+          label: {
+            show: true,
+            formatter: '{b}: {c} ({d}%)',
+            textStyle: {
+              color: '#ffffff',
+              textBorderColor: 'transparent',
+              textBorderWidth: 0
+            }
+          },
+          animationType: 'scale',
+          animationEasing: 'elasticOut',
+          animationDelay: function (idx: number) {
+            return Math.random() * 200;
+          }
+        }
+      ]
+    };
+  }, [selectedAbility, hitSummaryData]);
+
+  // 堆叠面积图配置
+  const stackAreaChartOption = useMemo(() => {
+    if (!selectedAbility || hitSummaryData.length === 0) {
+      return {}
+    }
+
+    return {
+      title: {
+        text: '伤害构成分析',
+        left: 'center',
+        textStyle: {
+          color: '#fff'
+        }
+      },
+      tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+          type: 'cross',
+          label: {
+            backgroundColor: '#6a7985'
+          }
+        }
+      },
+      legend: {
+        data: ['最终伤害', '减伤', '吸收盾'],
+        textStyle: {
+          color: '#fff'
+        },
+        top: 'bottom'
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '15%',
+        containLabel: true
+      },
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: hitSummaryData.map(item => item.name),
+        axisLabel: {
+          color: '#fff',
+          rotate: 45
+        }
+      },
+      yAxis: {
+        type: 'value',
+        axisLabel: {
+          color: '#fff'
+        }
+      },
+      series: [
+        {
+          name: '最终伤害',
+          type: 'line',
+          stack: '总量',
+          areaStyle: {},
+          emphasis: {
+            focus: 'series'
+          },
+          data: hitSummaryData.map(item => item.amount)
+        },
+        {
+          name: '减伤',
+          type: 'line',
+          stack: '总量',
+          areaStyle: {},
+          emphasis: {
+            focus: 'series'
+          },
+          data: hitSummaryData.map(item => item.mitigated)
+        },
+        {
+          name: '吸收盾',
+          type: 'line',
+          stack: '总量',
+          areaStyle: {},
+          emphasis: {
+            focus: 'series'
+          },
+          data: hitSummaryData.map(item => item.absorbed)
+        }
+      ]
+    };
+  }, [selectedAbility, hitSummaryData]);
 
   const handleAbilityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const abilityId = parseInt(e.target.value, 10);
@@ -116,36 +256,47 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
               ))
             ) : (
               <option disabled>该首领未找到技能</option>
-            )}
+            )}          
           </select>
         )}
-        <button
-          onClick={refreshData}
-          disabled={!selectedAbility || isLoadingHitData}
-          className="bg-cyan-500 hover:bg-cyan-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-md transition duration-300 flex items-center"
-          title="刷新当前技能数据"
-        >
-          {isLoadingHitData ? (
-            <Spinner />
-          ) : (
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-          )}
-          <span className="ml-2">刷新</span>
-        </button>
       </div>
 
-      <h3 className="text-xl font-bold text-white mb-4">
-        {selectedAbility ? `${selectedAbility.name} - 命中详情` : '选择一个技能以查看详情'}
-      </h3>
+      <div className="text-xl font-bold text-white mb-4">
+        {selectedAbility ? `${selectedAbility.name} - 命中汇总` : '选择一个技能以查看详情'}
+      </div>
       
-      <DataTable 
-        columns={columns} 
-        data={hitData} 
-        isLoading={isLoadingHitData} 
-        keyField="timestamp" 
-      />
+      {selectedAbility && (
+        <>
+          {/* 图表区域 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div className="bg-gray-800 rounded-lg p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h3 className="text-xl font-bold text-white">最终伤害分布</h3>
+              </div>
+              <ReactECharts 
+                option={pieChartOption} 
+                style={{ height: '400px', width: '100%' }}
+                opts={{ renderer: 'canvas' }}
+              />
+            </div>
+            <div className="bg-gray-800 rounded-lg p-4">
+              <ReactECharts 
+                option={stackAreaChartOption} 
+                style={{ height: '400px', width: '100%' }}
+                opts={{ renderer: 'canvas' }}
+              />
+            </div>
+          </div>
+          
+          {/* 表格 */}
+          <DataTable 
+            columns={columns} 
+            data={hitSummaryData} 
+            isLoading={isLoadingHitSummary} 
+            keyField="id" 
+          />
+        </>
+      )}
     </div>
   );
 };

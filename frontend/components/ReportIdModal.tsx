@@ -16,7 +16,7 @@ interface ReportIdModalProps {
 }
 
 export const ReportIdModal: React.FC<ReportIdModalProps> = ({ onSubmit, isLoading, error }) => {
-  const [reportId, setReportId] = useState('tTAM3BKp9Yjd7RHr'); // Default example
+  const [reportId, setReportId] = useState(''); // Default example
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
