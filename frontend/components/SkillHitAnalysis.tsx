@@ -11,6 +11,7 @@ import { Boss, Ability, SkillHitSummary } from '../types';
 import { getAbilities, getSkillHitSummary, getSkillHitDetail, SkillHitDetail } from '../services/wclService';
 import { Spinner } from './Spinner';
 import { DataTable } from './DataTable';
+import { SearchableDropdown } from './SearchableDropdown';
 import ReactECharts from 'echarts-for-react';
 import * as echarts from 'echarts';
 
@@ -468,12 +469,8 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
     };
   }, [selectedAbility, hitSummaryData, drillDownState]);
 
-  const handleAbilityChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const abilityId = parseInt(e.target.value, 10);
-    const ability = abilities.find(a => a.id === abilityId);
-    if (ability) {
-      setSelectedAbility(ability);
-    }
+  const handleAbilityChange = (ability: Ability | null | undefined) => {
+    setSelectedAbility(ability);
   };
 
   return (
@@ -485,25 +482,18 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
         {isLoadingAbilities ? (
           <div className="h-10 w-64 bg-gray-700 rounded animate-pulse"></div>
         ) : (
-          <select
-            id="ability-select"
-            value={selectedAbility?.id || ''}
-            onChange={handleAbilityChange}
-            className="w-full max-w-sm bg-gray-700 border border-gray-600 rounded-md px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-cyan-500"
-            aria-label="选择技能"
-            disabled={abilities.length === 0}
-          >
-            <option value="">请选择技能</option>
-            {abilities.length > 0 ? (
-              abilities.map((ability) => (
-                <option key={ability.id} value={ability.id}>
-                  {ability.name}
-                </option>
-              ))
-            ) : (
-              <option disabled>该首领未找到技能</option>
-            )}          
-          </select>
+          <SearchableDropdown
+          id="ability-select"
+          value={selectedAbility}
+          onChange={handleAbilityChange}
+          options={abilities}
+          disabled={abilities.length === 0}
+          loading={isLoadingAbilities}
+          placeholder="请选择技能"
+          getOptionLabel={(ability) => ability.name}
+          getOptionValue={(ability) => ability.id}
+          noOptionsMessage={abilities.length > 0 ? '未找到匹配的技能' : '该首领未找到技能'}
+        />
         )}
       </div>
 
