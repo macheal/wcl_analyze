@@ -8,7 +8,7 @@
  */
 import React, { useState, useEffect, useMemo } from 'react';
 import { Boss, Ability, SkillHitSummary } from '../types';
-import { getAbilities, getSkillHitSummary } from '../services/wclService';
+import { getAbilities, getSkillHitSummary, getSkillHitDetail, SkillHitDetail } from '../services/wclService';
 import { Spinner } from './Spinner';
 import { DataTable } from './DataTable';
 import ReactECharts from 'echarts-for-react';
@@ -26,6 +26,14 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
   const [hitSummaryData, setHitSummaryData] = useState<SkillHitSummary[]>([]);
   const [isLoadingAbilities, setIsLoadingAbilities] = useState<boolean>(true);
   const [isLoadingHitSummary, setIsLoadingHitSummary] = useState<boolean>(false);
+  // 下钻相关状态
+  const [drillDownState, setDrillDownState] = useState<{ 
+    isDrillDown: boolean; 
+    userId: string; 
+    userName: string; 
+    drillDownData: SkillHitDetail[] 
+  }>({ isDrillDown: false, userId: '', userName: '', drillDownData: [] });
+  const [isLoadingDrillDown, setIsLoadingDrillDown] = useState<boolean>(false);
 
   // 刷新功能已移除
 
@@ -83,11 +91,169 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
     { key: 'absorbed', label: '吸收盾', format: 'number', align: 'right' },
   ], []);
 
-  // 饼形图配置
-  const pieChartOption = useMemo(() => {
-    if (!selectedAbility || hitSummaryData.length === 0) {
+  // 处理饼图点击事件
+  const handlePieChartClick = async (params: any) => {
+    if (drillDownState.isDrillDown || !selectedAbility) return;
+    
+    const clickedItem = hitSummaryData.find(item => item.name === params.name);
+    if (!clickedItem) return;
+    
+    setIsLoadingDrillDown(true);
+    try {
+      const detailData = await getSkillHitDetail(reportId, boss.id, selectedAbility.id, clickedItem.id);
+      setDrillDownState({
+        isDrillDown: true,
+        userId: clickedItem.id,
+        userName: clickedItem.name,
+        drillDownData: detailData
+      });
+    } catch (error) {
+      console.error('Failed to fetch drill down data:', error);
+    } finally {
+      setIsLoadingDrillDown(false);
+    }
+  };
+
+  // 返回上级 - 修复界面混乱问题
+  const handleBackToMain = () => {
+    // 重置下钻状态，使用函数式更新确保状态正确重置
+    setDrillDownState(prevState => ({
+      ...prevState,
+      isDrillDown: false,
+      drillDownData: []
+    }));
+  };
+
+  // 图表配置（根据是否下钻显示饼图或柱状图）
+  const chartOption = useMemo(() => {
+    if (!selectedAbility || (hitSummaryData.length === 0 && !drillDownState.isDrillDown)) {
       return {}
     }
+
+    // 下钻状态：显示柱状图（双Y轴）
+    if (drillDownState.isDrillDown) {
+      const drillDownFightData = drillDownState.drillDownData
+        .filter(item => item.fight > 0) // 只显示有数据的战斗
+        .sort((a, b) => a.fight - b.fight); // 按战斗场次排序
+
+      return {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            type: 'cross',
+            crossStyle: {
+              color: '#999'
+            }
+          }
+        },
+        legend: {
+          show: true,
+          data: ['最终伤害', '命中次数'],
+          textStyle: {
+            color: '#fff'
+          },
+          top: 'bottom'
+        },
+        grid: {
+          left: '3%',
+          right: '4%',
+          bottom: '15%',
+          containLabel: true
+        },
+        xAxis: [
+          {
+            type: 'category',
+            data: drillDownFightData.map(item => `战斗 ${item.fight}`),
+            axisPointer: {
+              type: 'shadow'
+            },
+            axisLabel: {
+              color: '#fff'
+            }
+          }
+        ],
+        yAxis: [
+          {
+            type: 'value',
+            name: '最终伤害',
+            min: 0,
+            max: drillDownFightData.length > 0 ? Math.max(...drillDownFightData.map(item => item.amount)) * 1.2 : 100,
+            axisLabel: {
+              formatter: '{value}',
+              color: '#fff'
+            },
+            nameTextStyle: {
+              color: '#fff'
+            }
+          },
+          {
+            type: 'value',
+            name: '命中次数',
+            min: 0,
+            max: drillDownFightData.length > 0 ? Math.max(...drillDownFightData.map(item => item.count)) * 1.2 : 10,
+            axisLabel: {
+              formatter: '{value}',
+              color: '#fff'
+            },
+            nameTextStyle: {
+              color: '#fff'
+            }
+          }
+        ],
+        series: [
+          {
+            name: '最终伤害',
+            type: 'bar',
+            data: drillDownFightData.map(item => item.amount),
+            itemStyle: {
+              color: '#36cfc9'
+            },
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            }
+          },
+          {
+            name: '命中次数',
+            type: 'line',
+            yAxisIndex: 1,
+            data: drillDownFightData.map(item => item.count),
+            itemStyle: {
+              color: '#f9c851'
+            },
+            lineStyle: {
+              width: 3
+            },
+            symbol: 'circle',
+            symbolSize: 8,
+            emphasis: {
+              itemStyle: {
+                shadowBlur: 10,
+                shadowOffsetX: 0,
+                shadowColor: 'rgba(0, 0, 0, 0.5)'
+              }
+            }
+          }
+        ],
+        animationType: 'scale',
+        animationEasing: 'elasticOut',
+        animationDelay: function (idx: number) {
+          return Math.random() * 200;
+        }
+      };
+    }
+    
+    // 主状态：显示饼图
+    const pieData = hitSummaryData.map(item => ({
+      name: item.name,
+      value: item.amount,
+      itemStyle: {
+        color: `hsl(${Math.random() * 360}, 70%, 60%)`
+      }
+    }));
 
     return {
       tooltip: {
@@ -103,13 +269,7 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
           type: 'pie',
           radius: '50%',
           center: ['50%', '60%'],
-          data: hitSummaryData.map(item => ({
-            name: item.name,
-            value: item.amount,
-            itemStyle: {
-              color: `hsl(${Math.random() * 360}, 70%, 60%)`
-            }
-          })),
+          data: pieData,
           emphasis: {
             itemStyle: {
               shadowBlur: 10,
@@ -134,7 +294,7 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
         }
       ]
     };
-  }, [selectedAbility, hitSummaryData]);
+  }, [selectedAbility, hitSummaryData, drillDownState]);
 
   // 堆叠面积图配置
   const stackAreaChartOption = useMemo(() => {
@@ -271,12 +431,29 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="bg-gray-800 rounded-lg p-6">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-white">最终伤害分布</h3>
+                <h3 className="text-xl font-bold text-white">
+                  {drillDownState.isDrillDown 
+                    ? `${drillDownState.userName} - 战斗伤害与命中统计` 
+                    : '最终伤害分布'
+                  }
+                </h3>
+                {drillDownState.isDrillDown && (
+                  <button
+                    onClick={handleBackToMain}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                  >
+                    ← 返回上级
+                  </button>
+                )}
               </div>
               <ReactECharts 
-                option={pieChartOption} 
+                key={drillDownState.isDrillDown ? 'drilldown' : 'main'} // 添加key属性强制重新渲染
+                option={chartOption} 
                 style={{ height: '400px', width: '100%' }}
                 opts={{ renderer: 'canvas' }}
+                onEvents={{
+                  click: drillDownState.isDrillDown ? undefined : handlePieChartClick
+                }}
               />
             </div>
             <div className="bg-gray-800 rounded-lg p-4">
@@ -291,10 +468,30 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
           {/* 表格 */}
           <DataTable 
             columns={columns} 
-            data={hitSummaryData} 
-            isLoading={isLoadingHitSummary} 
+            data={drillDownState.isDrillDown ? [] : hitSummaryData} 
+            isLoading={isLoadingHitSummary || isLoadingDrillDown} 
             keyField="id" 
           />
+          
+          {/* 下钻后的详细表格 */}
+          {drillDownState.isDrillDown && drillDownState.drillDownData.length > 0 && (
+            <div className="mt-6 bg-gray-800 rounded-lg p-6">
+              <h3 className="text-xl font-bold text-white mb-4">{drillDownState.userName} - 每场战斗详情</h3>
+              <DataTable 
+                columns={[
+                  { key: 'fight', label: '战斗场次' },
+                  { key: 'amount', label: '最终伤害' },
+                  { key: 'count', label: '命中次数' },
+                  { key: 'unmitigatedAmount', label: '原始伤害' },
+                  { key: 'mitigated', label: '减伤' },
+                  { key: 'absorbed', label: '吸收盾' },
+                ]} 
+                data={drillDownState.drillDownData.filter(item => item.fight > 0)} 
+                isLoading={isLoadingDrillDown} 
+                keyField="fight" 
+              />
+            </div>
+          )}
         </>
       )}
     </div>

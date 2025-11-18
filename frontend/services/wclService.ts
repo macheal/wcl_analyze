@@ -1,4 +1,15 @@
 import { Boss, Ability, SkillHit, KalecgosPlayerStat, SkillHitSummary } from '../types';
+
+export interface SkillHitDetail {
+  id: string;
+  name: string;
+  amount: number;
+  count: number;
+  fight: number;
+  mitigated: number;
+  unmitigatedAmount: number;
+  absorbed: number;
+}
 const MOCK_DELAY = 800;
 
 // Mock Data
@@ -164,6 +175,48 @@ export const getSkillHitSummary = async (reportId: string, bossId: number, skill
     
   } catch (error) {
     console.error('Failed to fetch skill hit summary:', error);
+    // 如果API调用失败，返回空数组
+    return [];
+  }
+};
+
+// 获取技能命中详情数据
+export const getSkillHitDetail = async (reportId: string, bossId: number, skillId: number, userId: string): Promise<SkillHitDetail[]> => {
+  console.log(`Fetching skill hit detail for report: ${reportId}, boss: ${bossId}, skill: ${skillId}, user: ${userId}`);
+  
+  try {
+    const url = '/api/v2/code/boss_skill_hit_detail';
+    const requestBody = JSON.stringify({ 
+      report_id: reportId,
+      boss_id: bossId,
+      skill_id: skillId.toString(),
+      user_id: userId
+    });
+    
+    console.log(`API Request: POST ${url}`);
+    console.log(`Request Body: ${requestBody}`);
+    
+    const response = await fetch(url, { 
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: requestBody,
+    });
+
+    console.log(`API Response Status: ${response.status}`);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log(`API Response Data:`, data);
+    return data;
+    
+  } catch (error) {
+    console.error('Failed to fetch skill hit detail:', error);
+    console.log('Falling back to mock data');
     // 如果API调用失败，返回空数组
     return [];
   }
