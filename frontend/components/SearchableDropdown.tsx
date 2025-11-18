@@ -9,6 +9,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 
 interface SearchableDropdownProps<T> {
+  id?: string;
   value: T | null | undefined;
   onChange: (value: T | null | undefined) => void;
   options: T[];
@@ -22,6 +23,7 @@ interface SearchableDropdownProps<T> {
 }
 
 export function SearchableDropdown<T>({
+  id,
   value,
   onChange,
   options,
@@ -83,6 +85,7 @@ export function SearchableDropdown<T>({
     >
       <div className="relative">
         <input
+          id={id}
           type="text"
           value={isOpen ? searchTerm : selectedValueText}
           onChange={(e) => setSearchTerm(e.target.value)}

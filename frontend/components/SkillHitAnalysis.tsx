@@ -247,12 +247,18 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
       };
     }
     
-    // 主状态：显示饼图
-    const pieData = hitSummaryData.map(item => ({
+    // 主状态：显示饼图 - 使用预设的明亮颜色，确保与深色背景有足够对比度
+    const brightColors = [
+      '#ff6b6b', '#4ecdc4', '#45b7d1', '#ffe66d', '#96ceb4', 
+      '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3',
+      '#ff6348', '#1dd1a1', '#5f27cd', '#ee5a24', '#00cec9'
+    ];
+    
+    const pieData = hitSummaryData.map((item, index) => ({
       name: item.name,
       value: item.amount,
       itemStyle: {
-        color: `hsl(${Math.random() * 360}, 70%, 60%)`
+        color: brightColors[index % brightColors.length]
       }
     }));
 
@@ -354,31 +360,37 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
           }
         },
         series: [
-          {
+          {            
             name: '最终伤害',
             type: 'line',
             stack: '总量',
-            areaStyle: {},
+            areaStyle: { color: '#ff6b6b' },
+            itemStyle: { color: '#ff6b6b' },
+            lineStyle: { color: '#ff6b6b', width: 2 },
             emphasis: {
               focus: 'series'
             },
             data: drillDownFightData.map(item => item.amount)
           },
-          {
+          {            
             name: '减伤',
             type: 'line',
             stack: '总量',
-            areaStyle: {},
+            areaStyle: { color: '#4ecdc4' },
+            itemStyle: { color: '#4ecdc4' },
+            lineStyle: { color: '#4ecdc4', width: 2 },
             emphasis: {
               focus: 'series'
             },
             data: drillDownFightData.map(item => item.mitigated)
           },
-          {
+          {            
             name: '吸收盾',
             type: 'line',
             stack: '总量',
-            areaStyle: {},
+            areaStyle: { color: '#ffe66d' },
+            itemStyle: { color: '#ffe66d' },
+            lineStyle: { color: '#ffe66d', width: 2 },
             emphasis: {
               focus: 'series'
             },
@@ -435,37 +447,43 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
         }
       },
       series: [
-        {
-          name: '最终伤害',
-          type: 'line',
-          stack: '总量',
-          areaStyle: {},
-          emphasis: {
-            focus: 'series'
+          {            
+            name: '最终伤害',
+            type: 'line',
+            stack: '总量',
+            areaStyle: { color: '#ff6b6b' },
+            itemStyle: { color: '#ff6b6b' },
+            lineStyle: { color: '#ff6b6b', width: 2 },
+            emphasis: {
+              focus: 'series'
+            },
+            data: hitSummaryData.map(item => item.amount)
           },
-          data: hitSummaryData.map(item => item.amount)
-        },
-        {
-          name: '减伤',
-          type: 'line',
-          stack: '总量',
-          areaStyle: {},
-          emphasis: {
-            focus: 'series'
+          {            
+            name: '减伤',
+            type: 'line',
+            stack: '总量',
+            areaStyle: { color: '#4ecdc4' },
+            itemStyle: { color: '#4ecdc4' },
+            lineStyle: { color: '#4ecdc4', width: 2 },
+            emphasis: {
+              focus: 'series'
+            },
+            data: hitSummaryData.map(item => item.mitigated)
           },
-          data: hitSummaryData.map(item => item.mitigated)
-        },
-        {
-          name: '吸收盾',
-          type: 'line',
-          stack: '总量',
-          areaStyle: {},
-          emphasis: {
-            focus: 'series'
-          },
-          data: hitSummaryData.map(item => item.absorbed)
-        }
-      ]
+          {            
+            name: '吸收盾',
+            type: 'line',
+            stack: '总量',
+            areaStyle: { color: '#ffe66d' },
+            itemStyle: { color: '#ffe66d' },
+            lineStyle: { color: '#ffe66d', width: 2 },
+            emphasis: {
+              focus: 'series'
+            },
+            data: hitSummaryData.map(item => item.absorbed)
+          }
+        ]
     };
   }, [selectedAbility, hitSummaryData, drillDownState]);
 
@@ -503,41 +521,58 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
       
       {selectedAbility && (
         <>
-          {/* 图表区域 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="bg-gray-800 rounded-lg p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="text-xl font-bold text-white">
-                  {drillDownState.isDrillDown 
-                    ? `${drillDownState.userName} - 战斗伤害与命中统计` 
-                    : '最终伤害分布'
-                  }
-                </h3>
-                {drillDownState.isDrillDown && (
-                  <button
-                    onClick={handleBackToMain}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
-                  >
-                    ← 返回上级
-                  </button>
-                )}
-              </div>
-              <ReactECharts 
-                key={drillDownState.isDrillDown ? 'drilldown' : 'main'} // 添加key属性强制重新渲染
-                option={chartOption} 
-                style={{ height: '400px', width: '100%' }}
-                opts={{ renderer: 'canvas' }}
-                onEvents={{
-                  click: drillDownState.isDrillDown ? undefined : handlePieChartClick
-                }}
-              />
+          {/* 图表区域 - 合并到同一个div中 */}
+          <div className="bg-gray-800 rounded-lg p-6 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-xl font-bold text-white">
+                {drillDownState.isDrillDown 
+                  ? `${drillDownState.userName} - 战斗伤害分析` 
+                  : '技能命中分析'
+                }
+              </h3>
+              {drillDownState.isDrillDown && (
+                <button
+                  onClick={handleBackToMain}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors"
+                >
+                  ← 返回上级
+                </button>
+              )}
             </div>
-            <div className="bg-gray-800 rounded-lg p-4">
-              <ReactECharts 
-                option={stackAreaChartOption} 
-                style={{ height: '400px', width: '100%' }}
-                opts={{ renderer: 'canvas' }}
-              />
+            <div className="flex flex-col md:flex-row gap-6">
+              {/* 第一个图表 - 饼图时垂直居中 */}
+              <div className="flex-1 flex flex-col">
+                <h4 className="text-lg font-medium text-gray-300 mb-2">
+                  {drillDownState.isDrillDown ? '战斗伤害与命中统计' : '最终伤害分布'}
+                </h4>
+                <div className={!drillDownState.isDrillDown ? "flex-1 flex items-center justify-center" : ""}>
+                  <ReactECharts 
+                    key={drillDownState.isDrillDown ? 'drilldown' : 'main'} // 添加key属性强制重新渲染
+                    option={chartOption} 
+                    style={{ 
+                      height: '400px', 
+                      width: '100%',
+                      // 饼图时设置最小宽度以确保水平对齐
+                      minWidth: !drillDownState.isDrillDown ? '100%' : 'auto'
+                    }}
+                    opts={{ renderer: 'canvas' }}
+                    onEvents={{
+                      click: drillDownState.isDrillDown ? undefined : handlePieChartClick
+                    }}
+                  />
+                </div>
+              </div>
+              {/* 第二个图表 */}
+              <div className="flex-1 flex flex-col">
+                <h4 className="text-lg font-medium text-gray-300 mb-2">伤害构成分析</h4>
+                <div className="flex-1">
+                  <ReactECharts 
+                    option={stackAreaChartOption} 
+                    style={{ height: '400px', width: '100%' }}
+                    opts={{ renderer: 'canvas' }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
           
