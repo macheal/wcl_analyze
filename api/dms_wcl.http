@@ -43,13 +43,7 @@ Content-Type: application/json
 
 {"report_id":"{{report_id}}"}
 
-
-### 卡雷什M7，万相拳分场次统计
-POST /api/v2/code/boss_kls_M7_wxq_list
-HOST: {{host}}
-Content-Type: application/json
-
-{"report_id":"{{report_id}}"}
+ 
 
 
 

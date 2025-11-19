@@ -2,7 +2,7 @@
  * @Author: GUANGYU WANG xinyukc01@hotmail.com
  * @Date: 2025-11-13 12:33:08
  * @LastEditors: GUANGYU WANG xinyukc01@hotmail.com
- * @LastEditTime: 2025-11-18 16:48:50
+ * @LastEditTime: 2025-11-19 11:34:10
  * @FilePath: /wcl_analyze/frontend/components/SkillHitAnalysis.tsx
  * @Description: 这是默认设置,请设置`customMade`, 打开koroFileHeader查看配置 进行设置: https://github.com/OBKoro1/koro1FileHeader/wiki/%E9%85%8D%E7%BD%AE
  */
@@ -148,13 +148,13 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
           }
         },
         legend: {
-          show: true,
-          data: ['最终伤害', '命中次数'],
-          textStyle: {
-            color: '#fff'
-          },
-          top: 'bottom'
+        show: false,
+        data: ['最终伤害', '命中次数'],
+        textStyle: {
+          color: '#fff'
         },
+        left: 'left'
+      },
         grid: {
           left: '3%',
           right: '4%',
@@ -268,14 +268,15 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
         formatter: '{a} <br/>{b}: {c} ({d}%)'
       },
       legend: {
-        show: false
+        show: false,
+        left: 'left'
       },
       series: [
         {
           name: '最终伤害',
           type: 'pie',
           radius: '50%',
-          center: ['50%', '60%'],
+          center: ['50%', '40%'],
           data: pieData,
           emphasis: {
             itemStyle: {
@@ -333,11 +334,12 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
           }
         },
         legend: {
+          show: false,
           data: ['最终伤害', '减伤', '吸收盾'],
           textStyle: {
             color: '#fff'
           },
-          top: 'bottom'
+          left: 'left'
         },
         grid: {
           left: '3%',
@@ -419,12 +421,13 @@ export const SkillHitAnalysis: React.FC<SkillHitAnalysisProps> = ({ reportId, bo
         }
       },
       legend: {
-        data: ['最终伤害', '减伤', '吸收盾'],
-        textStyle: {
-          color: '#fff'
+          show: false,
+          data: ['最终伤害', '减伤', '吸收盾'],
+          textStyle: {
+            color: '#fff'
+          },
+          left: 'left'
         },
-        top: 'bottom'
-      },
       grid: {
         left: '3%',
         right: '4%',
